@@ -76,10 +76,15 @@ class Consul(object):
             os.environ.get('CONSUL_HOST', 'localhost')
         self.port = self.kwargs.get('consul_port') or \
             os.environ.get('CONSUL_PORT', 8500)
+        self.datacenter = self.kwargs.get('consul_datacenter') or \
+            os.environ.get('CONSUL_DATACENTER', None)
         self.max_tries = self.kwargs.get('max_tries', 3)
         self.session = self._create_session(
             test_connection=self.kwargs.get('test_connection', False),
         )
+
+        self.service_name = self.kwargs.get('service_name', None)
+        self.environment = self.kwargs.get('environment', None)
 
     @with_retry_connections()
     def _create_session(self, test_connection=False):
@@ -92,7 +97,8 @@ class Consul(object):
         :type test_connection: bool
         :return consulate.Session instance
         """
-        session = consulate.Session(host=self.host, port=self.port)
+        session = consulate.Session(host=self.host, port=self.port,
+                                    datacenter=self.datacenter)
         if test_connection:
             session.status.leader()
         return session
