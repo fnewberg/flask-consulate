@@ -1,1 +1,4 @@
--e .
+Flask
+consulate
+dnspython
+requests>=2.7.0
