@@ -104,6 +104,26 @@ class Consul(object):
         return session
 
     @with_retry_connections()
+    def get_remote_config(self, namespace=None):
+        if namespace is None:
+            namespace = "config/{service}/{environment}/".format(
+                service=self.service_name or
+                        os.environ.get('SERVICE', 'generic_service'),
+                environment=self.environment or
+                            os.environ.get('ENVIRONMENT', 'generic_environment')
+            )
+
+        remote_config = {}
+        for k, v in self.session.kv.find(namespace).iteritems():
+            k = k.replace(namespace, '')
+            try:
+                remote_config[k] = json.loads(v)
+            except (TypeError, ValueError):
+                self.app.logger.warning("Couldn't de-serialize {} to json, using raw value".format(v))
+                remote_config[k] = v
+
+        return remote_config
+
     def apply_remote_config(self, namespace=None):
         """
         Applies all config values defined in consul's kv store to self.app.
@@ -116,20 +136,7 @@ class Consul(object):
         :return: None
         """
 
-        if namespace is None:
-            namespace = "config/{service}/{environment}/".format(
-                service=os.environ.get('SERVICE', 'generic_service'),
-                environment=os.environ.get('ENVIRONMENT', 'generic_environment')
-            )
-
-        for k, v in self.session.kv.find(namespace).iteritems():
-            k = k.replace(namespace, '')
-            try:
-                self.app.config[k] = json.loads(v)
-            except (TypeError, ValueError):
-                self.app.logger.warning("Couldn't de-serialize {} to json, using raw value".format(v))
-                self.app.config[k] = v
-
+        for k, v in self.get_remote_config(namespace).iteritems():
             msg = "Set {k}={v} from consul kv '{ns}'".format(
                 k=k,
                 v=v,
