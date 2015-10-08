@@ -63,6 +63,13 @@ class Consul(object):
         if app is not None:
             self.init_app(app)
 
+    def __repr__(self):
+        return 'Consul(host={0}, port={1}, datacenter={2})'.format(
+            self.kwargs.get('consul_host'),
+            self.kwargs.get('consul_port'),
+            self.kwargs.get('consul_datacenter')
+        )
+
     def init_app(self, app, **kwargs):
         self.app = app
         self.kwargs.update(kwargs)
