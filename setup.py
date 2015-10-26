@@ -31,13 +31,15 @@ setup(
         'Flask',
         'requests>=2.7.0',
         'dnspython',
+    ],
+    test_suite='tests',
+    tests_require=[
         'flask-testing',
         'httpretty',
         'mock',
         'nose',
-        'coveralls'
+        'coveralls',
     ],
-    test_suite='tests',
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
@@ -48,4 +50,3 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ]
 )
-
